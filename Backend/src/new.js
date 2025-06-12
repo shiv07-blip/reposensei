@@ -2,9 +2,53 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
+// Initialize Express and Middleware
 const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Setup Gemini AI
+const ai = new GoogleGenerativeAI("AIzaSyD4SX2TeFTj7NXGovdxP8xBrMYJcvE1H6w");
+
+// Gemini AI endpoint
+app.get('/', (req, res) => {
+  res.send('AI Assistant Backend is running');
+});
+
+app.post('/api/chat', async (req, res) => {
+  const { message, codeMentions } = req.body;
+
+  try {
+    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+    const result = await model.generateContent(message);
+    const response = await result.response;
+    const text = response.text();
+
+    res.json({
+      id: Date.now().toString(),
+      type: 'assistant',
+      content: text,
+      timestamp: new Date().toISOString(),
+      context: codeMentions || []
+    });
+  } catch (error) {
+    console.error('Error calling Google Gemini API:', error);
+    res.status(500).json({
+      id: Date.now().toString(),
+      type: 'assistant',
+      content: 'Sorry, there was an error processing your request.',
+      timestamp: new Date().toISOString(),
+      context: codeMentions || []
+    });
+  }
+});
+
+// Create HTTP server
 const server = http.createServer(app);
+
+// Setup Socket.io
 const io = socketIo(server, {
   cors: {
     origin: "https://reposensei-93e6.vercel.app",
@@ -12,13 +56,9 @@ const io = socketIo(server, {
   },
 });
 
-app.use(cors());
-app.use(express.json());
-
-// Store room information
+// Room storage
 const rooms = new Map();
 
-// Helper function to get room info
 const getRoomInfo = (roomId) => {
   if (!rooms.has(roomId)) {
     rooms.set(roomId, {
@@ -42,13 +82,12 @@ io.on("connection", (socket) => {
 
   const room = getRoomInfo(roomId);
 
-  // Check if room is full (max 2 users)
   if (room.users.size >= 2 && !room.users.has(userId)) {
     console.log(`Room ${roomId} is full`);
     socket.emit("room-full");
     setTimeout(() => {
       socket.disconnect();
-    }, 1000); // Disconnect after 1 second
+    }, 1000);
     return;
   }
 
@@ -56,7 +95,6 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.emit("connected");
     console.log("User joined room:", roomId, "with ID:", userId);
-    // Now emit to the new user with info about others
     socket.to(roomId).emit("user-joined", { id: userId, name: userName });
 
     const otherUsers = Array.from(room.users.values()).filter(
@@ -71,24 +109,20 @@ io.on("connection", (socket) => {
     });
   });
 
-  // Add user to room
   room.users.set(userId, {
     id: userId,
     name: userName,
     socketId: socket.id,
   });
 
-  // Send existing messages to the new user
   room.messages.forEach((message) => {
     socket.emit("message", message);
   });
 
-  // Send current users to the new user
   const otherUsers = Array.from(room.users.values()).filter(
     (user) => user.id !== userId
   );
   otherUsers.forEach((user) => {
-    console.log("Sending existing user:", user, "to new user:", userName);
     socket.emit("user-joined", {
       id: user.id,
       name: user.name,
@@ -99,24 +133,18 @@ io.on("connection", (socket) => {
     `User ${userName} joined room ${roomId}. Room size: ${room.users.size}`
   );
 
-  // Handle chat messages
   socket.on("send-message", (message) => {
     console.log("Message received:", message);
 
-    // Validate message
     if (!message || !message.content || !message.senderId) {
       console.log("Invalid message format");
       return;
     }
 
-    // Store message in room
     room.messages.push(message);
-
-    // Broadcast to other users in the room
     socket.to(roomId).emit("message", message);
   });
 
-  // WebRTC Signaling Events
   socket.on("call-offer", (data) => {
     console.log("Call offer from", userId, "to", data.to);
 
@@ -125,7 +153,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Find the target user's socket
     const targetUser = Array.from(room.users.values()).find(
       (user) => user.id === data.to
     );
@@ -147,7 +174,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Send answer to all other users in the room (should be just one)
     socket.to(roomId).emit("call-answer", {
       from: userId,
       answer: data.answer,
@@ -162,7 +188,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // Broadcast ICE candidate to other users in the room
     socket.to(roomId).emit("ice-candidate", {
       from: userId,
       candidate: data.candidate,
@@ -172,13 +197,11 @@ io.on("connection", (socket) => {
   socket.on("end-call", () => {
     console.log("Call ended by", userId);
 
-    // Notify other users that the call ended
     socket.to(roomId).emit("call-ended", {
       from: userId,
     });
   });
 
-  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
 
@@ -186,7 +209,6 @@ io.on("connection", (socket) => {
       const user = room.users.get(userId);
       room.users.delete(userId);
 
-      // Notify others in the room
       socket.to(roomId).emit("user-left", {
         id: userId,
         name: user.name,
@@ -196,7 +218,6 @@ io.on("connection", (socket) => {
         `User ${user.name} left room ${roomId}. Room size: ${room.users.size}`
       );
 
-      // Clean up empty rooms
       if (room.users.size === 0) {
         rooms.delete(roomId);
         console.log(`Room ${roomId} deleted (empty)`);
@@ -204,13 +225,11 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Error handling
   socket.on("error", (error) => {
     console.error("Socket error:", error);
   });
 });
 
-// Error handling for the server
 server.on("error", (error) => {
   console.error("Server error:", error);
 });
@@ -218,6 +237,6 @@ server.on("error", (error) => {
 const PORT = process.env.PORT || 3002;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log("WebRTC signaling server ready");
-  console.log("CORS enabled for http://localhost:8080");
+  console.log("WebRTC signaling server & AI Assistant backend ready");
 });
+
