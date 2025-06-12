@@ -35,7 +35,7 @@ export const TwoPersonChat: React.FC<TwoPersonChatProps> = ({ userId, userName, 
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Socket connection for chat and signaling
-  const socket = useSocket("http://localhost:3002", {
+  const socket = useSocket("https://reposensei.onrender.com", {
     userId,
     userName,
     roomId,

@@ -48,7 +48,7 @@ export const AudioCallManager: React.FC<AudioCallManagerProps> = ({
 
   // Initialize socket
   useEffect(() => {
-    const socketInstance = io('http://localhost:3001');
+    const socketInstance = io('https://reposensei.onrender.com');
     setSocket(socketInstance);
     return () => {
       socketInstance.disconnect();
