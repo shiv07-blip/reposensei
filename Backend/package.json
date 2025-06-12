@@ -4,7 +4,7 @@
   "main": "index.js",
  "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"node ./src/new.js\" \"node ./src/chatbot-server.js\""
+    "start": "node ./src/new.js\" "
     
   },
   "keywords": [],
