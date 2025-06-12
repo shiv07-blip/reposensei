@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "https://reposensei-93e6.vercel.app/",
+    origin: "https://reposensei-93e6.vercel.app",
     methods: ["GET", "POST"],
   },
 });
