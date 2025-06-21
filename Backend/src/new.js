@@ -23,7 +23,7 @@ app.post("/api/chat", async (req, res) => {
 
   try {
     const geminiRes = await axios.post(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17/gemini-2.5-flash-preview-04-17:streamGenerateContent ",
       {
         contents: [{ parts: [{ text: message }] }],
       },
