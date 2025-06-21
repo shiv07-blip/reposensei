@@ -7,6 +7,7 @@ import { Search, FileCode, Code2, Variable } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ScrollAreaCorner } from '@radix-ui/react-scroll-area';
+import axios from "axios";
 
 interface CodeContextPanelProps {
   codeMentions: string[];
@@ -71,65 +72,20 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
   };
 
   useEffect(() => {
-    // Simulate fetching AI markdown response
-    const simulateAPICall = async () => {
-      try {
-        // Simulated delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+  const simulateAPICall = async () => {
+  try {
+    const response = await axios.post('https://reposensei.onrender.com/api/analyze-repo', {
+    repoUrl: "https://github.com/shiv07-blip/Weather-Application.git"
+    });
 
-        // Simulated response (your JSON data)
-        const fakeResponse = {
-          success: true,
-          result: {
-            success: true,
-            results: [
-              {
-                files: [
-                  "/tmp/repo_clone_1750524341993\\index.html",
-                  "/tmp/repo_clone_1750524341993\\README.md",
-                  "/tmp/repo_clone_1750524341993\\script.js",
-                  "/tmp/repo_clone_1750524341993\\style.css"
-                ],
-                ai_response: {
-                  text: `### File: \`index.html\`
+    const markdown = response.data.result.results[0].ai_response.text;
 
-**Purpose:** Defines structure of the weather app page.
-
-**Suggestions:**
-
-- Add Bootstrap Icons:
-  \`\`\`html
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  \`\`\`
-- Improve accessibility alt tags.
-- Wrap input in \`<form>\` for better semantics.
-
----
-
-### File: \`script.js\`
-
-**Critical Fix:** Never hardcode API keys!
-
-**Improvement:**
-\`\`\`js
-.catch((error) => {
-  console.error("Error fetching weather:", error);
-  document.querySelector(".city").innerText = "Failed to fetch weather.";
-});
-\`\`\`
-`
-                }
-              }
-            ]
-          }
-        };
-
-        const markdown = fakeResponse.result.results[0].ai_response.text;
-        setMarkdownFromAI(markdown);
-      } catch (err) {
-        setMarkdownFromAI('⚠️ Error loading markdown content.');
-      }
-    };
+    setMarkdownFromAI(markdown);
+  } catch (err) {
+    console.error("API call failed:", err);
+    setMarkdownFromAI('⚠️ Error loading markdown content.');
+  }
+};
 
     simulateAPICall();
   }, []);
