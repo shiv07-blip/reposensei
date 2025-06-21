@@ -5,7 +5,7 @@ const router = express.Router();
 function analyzeGithubRepo(repoUrl, localDir, geminiApiKey, githubToken) {
   return new Promise((resolve, reject) => {
     const args = [
-      'github_ai_assistant.py',
+      'src/github_ai_assistant.py',
       repoUrl,
       localDir,
       geminiApiKey,
