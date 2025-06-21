@@ -370,7 +370,7 @@ export const AudioCallManager: React.FC<AudioCallManagerProps> = ({
 
   if (!sessionId) {
     return (
-      <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+      <Card className="p-6 bg-[#21262D] border-slate-700 backdrop-blur-sm">
         <div className="text-center text-slate-400">
           <Phone className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>Create a session to start an audio call</p>
@@ -380,7 +380,7 @@ export const AudioCallManager: React.FC<AudioCallManagerProps> = ({
   }
 
   return (
-    <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+    <Card className="p-6 bg-[#21262D] border-slate-700 backdrop-blur-sm">
       <div className="space-y-4">
         {!isInCall ? (
           <div className="space-y-4">

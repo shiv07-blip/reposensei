@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Search, FileCode, Code2, Variable } from 'lucide-react';
+import axios from 'axios'; // ✅ Required for API calls
 
 interface CodeContextPanelProps {
   codeMentions: string[];
@@ -19,8 +20,9 @@ interface CodeReference {
 
 export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions }) => {
   const [selectedReference, setSelectedReference] = useState<CodeReference | null>(null);
+  const [aiExplanation, setAIExplanation] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Mock code references based on mentions
   const codeReferences: CodeReference[] = codeMentions.map(mention => {
     if (mention.includes('.js') || mention.includes('.ts')) {
       return {
@@ -64,6 +66,37 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
     }
   };
 
+  // 🔁 MAIN NEW FUNCTION
+  const fetchFileAndExplain = async () => {
+    if (!selectedReference || selectedReference.type !== 'file') return;
+
+    try {
+      setLoading(true);
+      const fileName = selectedReference.name;
+
+      const fileRes = await axios.get('/api/getGitHubFile', {
+        params: {
+          owner: 'your-username', // ⬅️ change to actual owner
+          repo: 'your-repo',      // ⬅️ change to actual repo
+          filePath: `src/utils/${fileName}`, // ⬅️ update if needed
+        },
+      });
+
+      const fileContent = fileRes.data.content;
+
+      const aiRes = await axios.post('/api/askAI', {
+        prompt: `Explain this JavaScript code in simple terms:\n\n${fileContent}`,
+      });
+
+      setAIExplanation(aiRes.data.answer);
+    } catch (error) {
+      console.error(error);
+      setAIExplanation('⚠️ Error getting explanation.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-96 flex flex-col">
       <div className="flex items-center gap-2 mb-4">
@@ -83,7 +116,6 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
         </div>
       ) : (
         <div className="flex-1 flex gap-4">
-          {/* References List */}
           <div className="w-1/2">
             <ScrollArea className="h-full">
               <div className="space-y-2">
@@ -93,10 +125,13 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
                     variant="ghost"
                     className={`w-full justify-start p-3 h-auto ${
                       selectedReference === ref 
-                        ? 'bg-slate-700/50 border border-slate-600' 
+                        ? 'bg- border border-slate-600' 
                         : 'hover:bg-slate-700/30'
                     }`}
-                    onClick={() => setSelectedReference(ref)}
+                    onClick={() => {
+                      setSelectedReference(ref);
+                      setAIExplanation(null); // Clear previous AI result
+                    }}
                   >
                     <div className="flex items-start gap-3 w-full">
                       <div className={`p-1 rounded ${getTypeColor(ref.type)}`}>
@@ -119,7 +154,6 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
 
           <Separator orientation="vertical" className="bg-slate-600" />
 
-          {/* Reference Details */}
           <div className="w-1/2">
             {selectedReference ? (
               <div className="space-y-4">
@@ -132,9 +166,9 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
                   <h3 className="font-medium text-white">{selectedReference.name}</h3>
                   <p className="text-sm text-slate-400">{selectedReference.location}</p>
                 </div>
-                
+
                 <p className="text-sm text-slate-300">{selectedReference.description}</p>
-                
+
                 {selectedReference.snippet && (
                   <div className="bg-slate-900/50 rounded-lg p-3">
                     <p className="text-xs text-slate-400 mb-2">Code Preview:</p>
@@ -144,12 +178,21 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
                   </div>
                 )}
 
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
+                  onClick={fetchFileAndExplain}
+                  disabled={loading}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 >
-                  Explain in Chat
+                  {loading ? 'Explaining...' : 'Explain in Chat'}
                 </Button>
+
+                {aiExplanation && (
+                  <div className="bg-slate-800/70 rounded p-3 mt-2 text-sm text-slate-200">
+                    <p className="text-xs text-purple-400 mb-1">AI Explanation:</p>
+                    <p>{aiExplanation}</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-slate-400">

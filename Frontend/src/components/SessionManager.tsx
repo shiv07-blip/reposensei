@@ -47,7 +47,7 @@ export const SessionManager: React.FC<SessionManagerProps> = ({
   };
 
   return (
-    <Card className="p-4 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+    <Card className="p-4 bg-[#21262D] border-slate-700 backdrop-blur-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export const SessionManager: React.FC<SessionManagerProps> = ({
                 placeholder="Session name (optional)"
                 value={sessionName}
                 onChange={(e) => setSessionName(e.target.value)}
-                className="w-48 bg-slate-700/50 border-slate-600 text-white placeholder-slate-400"
+                className="w-48 bg-[#21262D] border-slate-600 text-white placeholder-slate-400"
               />
               <Button 
                 onClick={startSession}

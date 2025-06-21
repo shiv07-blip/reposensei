@@ -27,7 +27,7 @@ export const PairProgrammingAssistant: React.FC<PairProgrammingAssistantProps> =
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold  mb-4 bg-gradient-to-r from-[#CAF5BB] to-[#2F89FF] bg-clip-text text-transparent sub-head">
             AI Pair Programming Assistant
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto">
@@ -48,7 +48,7 @@ export const PairProgrammingAssistant: React.FC<PairProgrammingAssistantProps> =
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Audio Call & Transcription */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm h-full">
+            <Card className="p-6 bg-[#21262D] border-slate-700 backdrop-blur-sm h-full">
               <div className="flex items-center gap-2 mb-4">
                 <Users className="w-5 h-5 text-orange-400" />
                 <h2 className="text-xl font-semibold text-white">Chat</h2>
@@ -59,7 +59,7 @@ export const PairProgrammingAssistant: React.FC<PairProgrammingAssistantProps> =
 
           {/* Middle Column - Code Context */}
           <div className="lg:col-span-1">
-            <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm h-full">
+            <Card className="p-6 bg-[#21262D] border-slate-700 backdrop-blur-sm h-full">
               <div className="flex items-center gap-2 mb-4">
                 <Code className="w-5 h-5 text-green-400" />
                 <h2 className="text-xl font-semibold text-white">Code Context</h2>
@@ -70,10 +70,10 @@ export const PairProgrammingAssistant: React.FC<PairProgrammingAssistantProps> =
 
           {/* Right Column - AI Assistant */}
           <div className="lg:col-span-1">
-            <Card className="p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm h-full">
+            <Card className="p-6 bg-[#21262D] border-slate-700 backdrop-blur-sm h-full">
               <div className="flex items-center gap-2 mb-4">
                 <Bot className="w-5 h-5 text-orange-400" />
-                <h2 className="text-xl font-semibold text-white">AI Assistant</h2>
+                <h2 className="text-xl font-semibold text-white">Gitzy</h2>
               </div>
               <AIAssistantChat 
                 transcript={transcript}
@@ -84,9 +84,9 @@ export const PairProgrammingAssistant: React.FC<PairProgrammingAssistantProps> =
         </div>
 
         {/* Bottom Section - Session Summary */}
-        <Card className="mt-6 p-6 bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+        <Card className="mt-6 p-6 bg-[#21262D] border-slate-700 backdrop-blur-sm">
           <Tabs defaultValue="summary" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-slate-700/50">
+            <TabsList className="grid w-full grid-cols-4 bg-[#2A2E35]">
               <TabsTrigger value="summary" className="text-slate-300">Session Summary</TabsTrigger>
               <TabsTrigger value="decisions" className="text-slate-300">Decisions Made</TabsTrigger>
               <TabsTrigger value="references" className="text-slate-300">Code References</TabsTrigger>

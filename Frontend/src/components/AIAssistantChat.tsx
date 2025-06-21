@@ -1,3 +1,5 @@
+
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -138,8 +140,8 @@ export const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
               <div className={`flex-1 ${message.type === 'user' ? 'text-right' : ''}`}>
                 <div className={`inline-block max-w-[85%] rounded-lg p-3 ${
                   message.type === 'user'
-                    ? 'bg-blue-600/20 text-blue-100 border border-blue-500/30'
-                    : 'bg-slate-700/50 text-slate-200 border border-slate-600/50'
+                    ? 'bg-[#21262D] text-blue-100 border border-blue-500/30'
+                    : 'bg-[#21262D] text-slate-200 border border-slate-600/50'
                 }`}>
                   <p className="text-sm leading-relaxed">{message.content}</p>
                   
@@ -164,10 +166,10 @@ export const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
           
           {isLoading && (
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg- text-purple-400 flex items-center justify-center">
                 <Bot className="w-4 h-4" />
               </div>
-              <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600/50">
+              <div className="bg-[#21262D] rounded-lg p-3 border border-slate-600/50">
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -185,7 +187,7 @@ export const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Ask about code, concepts, or request explanations..."
-          className="flex-1 bg-slate-700/50 border-slate-600 text-white placeholder-slate-400"
+          className="flex-1 bg-[#21262D] border-slate-600 text-white placeholder-slate-400"
           disabled={isLoading}
         />
         <Button 
@@ -199,3 +201,7 @@ export const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
     </div>
   );
 };
+
+
+
+
