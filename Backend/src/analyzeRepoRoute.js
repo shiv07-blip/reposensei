@@ -35,6 +35,7 @@ function analyzeGithubRepo(repoUrl, localDir, geminiApiKey, githubToken) {
 }
 
 router.post('/api/analyze-repo', async (req, res) => {
+    console.log('Received request to analyze repo:', req.body);
   const { repoUrl, githubToken } = req.body;
   const localDir = '/tmp/repo_clone_' + Date.now();
   const geminiApiKey = "AIzaSyAOM2O50Fc2r6Ca-yt7F1Uv8kgVkGAxdcw"; 
