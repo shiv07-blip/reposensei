@@ -3,7 +3,7 @@ const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
 const axios = require("axios");
-require("dotenv").config(); // Load DEEPSEEK_API_KEY from .env
+require("dotenv").config(); // Load GEMINI_API_KEY from .env
 const analyzeRepoRouter = require('./analyzeRepoRoute');
 
 // Initialize Express and Middleware
@@ -14,29 +14,32 @@ app.use(analyzeRepoRouter);
 
 // Health check endpoint
 app.get("/", (req, res) => {
-  res.send("AI Assistant Backend is running with DeepSeek R1");
+  res.send("AI Assistant Backend is running with Gemini API");
 });
 
-// ✅ DeepSeek AI Assistant Endpoint
+// ✅ Gemini AI Assistant Endpoint
 app.post("/api/chat", async (req, res) => {
   const { message, codeMentions } = req.body;
 
   try {
-    const response = await axios.post(
-      "https://api.deepseek.com/v1/chat/completions",
+    const geminiRes = await axios.post(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
       {
-        model: "deepseek-chat", // or "deepseek-coder" if needed
-        messages: [{ role: "user", content: message }],
+        contents: [{ parts: [{ text: message }] }],
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
           "Content-Type": "application/json",
+        },
+        params: {
+          key: process.env.GEMINI_API_KEY, // Gemini key from .env
         },
       }
     );
 
-    const reply = response.data.choices?.[0]?.message?.content || "No response from DeepSeek.";
+    const reply =
+      geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "No response from Gemini.";
 
     res.json({
       id: Date.now().toString(),
@@ -46,11 +49,11 @@ app.post("/api/chat", async (req, res) => {
       context: codeMentions || [],
     });
   } catch (error) {
-    console.error("Error calling DeepSeek API:", error?.response?.data || error.message);
+    console.error("Error calling Gemini API:", error?.response?.data || error.message);
     res.status(500).json({
       id: Date.now().toString(),
       type: "assistant",
-      content: "Sorry, DeepSeek failed to respond.",
+      content: "Sorry, Gemini failed to respond.",
       timestamp: new Date().toISOString(),
       context: codeMentions || [],
     });
@@ -245,7 +248,8 @@ server.on("error", (error) => {
 const PORT = process.env.PORT || 3002;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log("WebRTC signaling server & AI Assistant backend ready with DeepSeek R1");
+  console.log("WebRTC signaling server & AI Assistant backend ready with Gemini");
 });
+
 
 
