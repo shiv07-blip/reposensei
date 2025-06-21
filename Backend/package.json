@@ -2,11 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
-"scripts": {
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "start": "node ./src/new.js"
-},
-
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/new.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -14,11 +13,12 @@
   "dependencies": {
     "@google/genai": "^1.4.0",
     "@google/generative-ai": "^0.24.1",
+    "axios": "^1.10.0",
+    "concurrently": "^9.1.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "http": "^0.0.1-security",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
-    "concurrently": "^9.1.2"
+    "socket.io-client": "^4.8.1"
   }
 }
