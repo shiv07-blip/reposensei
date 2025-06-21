@@ -5,6 +5,12 @@ const cors = require("cors");
 const axios = require("axios");
 require("dotenv").config(); // Load GEMINI_API_KEY from .env
 const analyzeRepoRouter = require('./analyzeRepoRoute');
+const { GoogleGenAI } = require("@google/genai");
+
+// Initialize Gemini client
+const genAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
 // Initialize Express and Middleware
 const app = express();
@@ -14,7 +20,7 @@ app.use(analyzeRepoRouter);
 
 // Health check endpoint
 app.get("/", (req, res) => {
-  res.send("AI Assistant Backend is running with Gemini API");
+  res.send("AI Assistant Backend is running with Gemini");
 });
 
 // ✅ Gemini AI Assistant Endpoint
@@ -22,38 +28,24 @@ app.post("/api/chat", async (req, res) => {
   const { message, codeMentions } = req.body;
 
   try {
-    const geminiRes = await axios.post(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17/gemini-2.5-flash-preview-04-17:streamGenerateContent ",
-      {
-        contents: [{ parts: [{ text: message }] }],
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        params: {
-          key: process.env.GEMINI_API_KEY, // Gemini key from .env
-        },
-      }
-    );
-
-    const reply =
-      geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response from Gemini.";
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const result = await model.generateContent(message);
+    const response = await result.response;
+    const text = response.text();
 
     res.json({
       id: Date.now().toString(),
       type: "assistant",
-      content: reply,
+      content: text || "No response from Gemini SDK.",
       timestamp: new Date().toISOString(),
       context: codeMentions || [],
     });
   } catch (error) {
-    console.error("Error calling Gemini API:", error?.response?.data || error.message);
+    console.error("Error calling Gemini SDK:", error?.message || error);
     res.status(500).json({
       id: Date.now().toString(),
       type: "assistant",
-      content: "Sorry, Gemini failed to respond.",
+      content: "Sorry, Gemini SDK failed to respond.",
       timestamp: new Date().toISOString(),
       context: codeMentions || [],
     });
@@ -250,6 +242,7 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log("WebRTC signaling server & AI Assistant backend ready with Gemini");
 });
+
 
 
 
