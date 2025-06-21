@@ -85,7 +85,7 @@ export const AIAssistantChat: React.FC<AIAssistantChatProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://reposensei.onrender.com/api/chat', {
+      const response = await fetch('http://reposensei.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
