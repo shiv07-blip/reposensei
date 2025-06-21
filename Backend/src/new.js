@@ -8,8 +8,8 @@ const analyzeRepoRouter = require('./analyzeRepoRoute');
 const { GoogleGenAI } = require("@google/genai");
 
 // Initialize Gemini client
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+const ai = new GoogleGenAI({
+  apiKey: "AIzaSyDstDF_4tgwOeTRZNHf_cEbE880F7f1rE8",
 });
 
 // Initialize Express and Middleware
@@ -24,30 +24,31 @@ app.get("/", (req, res) => {
 });
 
 // ✅ Gemini AI Assistant Endpoint
-app.post("/api/chat", async (req, res) => {
+app.post('/api/chat', async (req, res) => {
   const { message, codeMentions } = req.body;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(message);
-    const response = await result.response;
-    const text = response.text();
+   const response = await ai.models.generateContent({
+    model: "gemini-1.5-flash",
+    contents: message,
+  });
+    const text = response.text;
 
     res.json({
       id: Date.now().toString(),
-      type: "assistant",
-      content: text || "No response from Gemini SDK.",
+      type: 'assistant',
+      content: text,
       timestamp: new Date().toISOString(),
-      context: codeMentions || [],
+      context: codeMentions || []
     });
   } catch (error) {
-    console.error("Error calling Gemini SDK:", error?.message || error);
+    console.error('Error calling Google Gemini API:', error);
     res.status(500).json({
       id: Date.now().toString(),
-      type: "assistant",
-      content: "Sorry, Gemini SDK failed to respond.",
+      type: 'assistant',
+      content: 'Sorry, there was an error processing your request.',
       timestamp: new Date().toISOString(),
-      context: codeMentions || [],
+      context: codeMentions || []
     });
   }
 });
