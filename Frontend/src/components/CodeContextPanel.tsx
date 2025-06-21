@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Search, FileCode, Code2, Variable } from 'lucide-react';
-import axios from 'axios'; // ✅ Required for API calls
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { ScrollAreaCorner } from '@radix-ui/react-scroll-area';
 
 interface CodeContextPanelProps {
   codeMentions: string[];
@@ -22,6 +24,8 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
   const [selectedReference, setSelectedReference] = useState<CodeReference | null>(null);
   const [aiExplanation, setAIExplanation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [markdownFromAI, setMarkdownFromAI] = useState<string | null>(null);
+  const scrollref = useRef<HTMLDivElement>(null);
 
   const codeReferences: CodeReference[] = codeMentions.map(mention => {
     if (mention.includes('.js') || mention.includes('.ts')) {
@@ -66,56 +70,94 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
     }
   };
 
-  // 🔁 MAIN NEW FUNCTION
-  const fetchFileAndExplain = async () => {
-    if (!selectedReference || selectedReference.type !== 'file') return;
+  useEffect(() => {
+    // Simulate fetching AI markdown response
+    const simulateAPICall = async () => {
+      try {
+        // Simulated delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-    try {
-      setLoading(true);
-      const fileName = selectedReference.name;
+        // Simulated response (your JSON data)
+        const fakeResponse = {
+          success: true,
+          result: {
+            success: true,
+            results: [
+              {
+                files: [
+                  "/tmp/repo_clone_1750524341993\\index.html",
+                  "/tmp/repo_clone_1750524341993\\README.md",
+                  "/tmp/repo_clone_1750524341993\\script.js",
+                  "/tmp/repo_clone_1750524341993\\style.css"
+                ],
+                ai_response: {
+                  text: `### File: \`index.html\`
 
-      const fileRes = await axios.get('/api/getGitHubFile', {
-        params: {
-          owner: 'your-username', // ⬅️ change to actual owner
-          repo: 'your-repo',      // ⬅️ change to actual repo
-          filePath: `src/utils/${fileName}`, // ⬅️ update if needed
-        },
-      });
+**Purpose:** Defines structure of the weather app page.
 
-      const fileContent = fileRes.data.content;
+**Suggestions:**
 
-      const aiRes = await axios.post('/api/askAI', {
-        prompt: `Explain this JavaScript code in simple terms:\n\n${fileContent}`,
-      });
+- Add Bootstrap Icons:
+  \`\`\`html
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  \`\`\`
+- Improve accessibility alt tags.
+- Wrap input in \`<form>\` for better semantics.
 
-      setAIExplanation(aiRes.data.answer);
-    } catch (error) {
-      console.error(error);
-      setAIExplanation('⚠️ Error getting explanation.');
-    } finally {
-      setLoading(false);
-    }
-  };
+---
+
+### File: \`script.js\`
+
+**Critical Fix:** Never hardcode API keys!
+
+**Improvement:**
+\`\`\`js
+.catch((error) => {
+  console.error("Error fetching weather:", error);
+  document.querySelector(".city").innerText = "Failed to fetch weather.";
+});
+\`\`\`
+`
+                }
+              }
+            ]
+          }
+        };
+
+        const markdown = fakeResponse.result.results[0].ai_response.text;
+        setMarkdownFromAI(markdown);
+      } catch (err) {
+        setMarkdownFromAI('⚠️ Error loading markdown content.');
+      }
+    };
+
+    simulateAPICall();
+  }, []);
 
   return (
     <div className="h-96 flex flex-col">
-      <div className="flex items-center gap-2 mb-4">
-        <Search className="w-4 h-4 text-slate-400" />
-        <span className="text-sm text-slate-400">
-          {codeReferences.length} references detected
-        </span>
-      </div>
+     
 
       {codeReferences.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-slate-400">
-          <div className="text-center">
-            <FileCode className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p>No code mentions detected yet</p>
-            <p className="text-sm mt-1">Start your pair programming session</p>
-          </div>
-        </div>
+        <>
+        {markdownFromAI && (
+          <ScrollArea className='flex-1 mb-4 ' ref={scrollref}> 
+
+            <div className="bg-[#2A2E35] rounded p-4 mt-4 text-slate-200 text-sm prose prose-invert w-full min-h-[200px" >
+                <ReactMarkdown  remarkPlugins={[remarkGfm]}>
+                  {markdownFromAI}
+                </ReactMarkdown>
+              </div>
+          </ScrollArea>
+
+
+             
+            )}
+
+        
+        </>
       ) : (
-        <div className="flex-1 flex gap-4">
+        <div className="flex-1 flex gap-4 ">
           <div className="w-1/2">
             <ScrollArea className="h-full">
               <div className="space-y-2">
@@ -154,7 +196,7 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
 
           <Separator orientation="vertical" className="bg-slate-600" />
 
-          <div className="w-1/2">
+          <div className="w-1/2 overflow-y-auto pr-2">
             {selectedReference ? (
               <div className="space-y-4">
                 <div>
@@ -180,28 +222,23 @@ export const CodeContextPanel: React.FC<CodeContextPanelProps> = ({ codeMentions
 
                 <Button
                   size="sm"
-                  onClick={fetchFileAndExplain}
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                  disabled
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 cursor-not-allowed"
                 >
-                  {loading ? 'Explaining...' : 'Explain in Chat'}
+                  Explain in Chat (Simulated)
                 </Button>
-
-                {aiExplanation && (
-                  <div className="bg-slate-800/70 rounded p-3 mt-2 text-sm text-slate-200">
-                    <p className="text-xs text-purple-400 mb-1">AI Explanation:</p>
-                    <p>{aiExplanation}</p>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-slate-400">
                 <p className="text-sm">Select a reference to view details</p>
               </div>
             )}
+
+            
           </div>
         </div>
       )}
     </div>
   );
 };
+
